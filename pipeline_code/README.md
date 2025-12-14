@@ -12,7 +12,7 @@ The system is designed to be **deterministic, transparent, and scalable**, suita
 
 ## Key Features
 
-- Ingests rooftop coordinates from CSV or XLSX files  
+- Ingests rooftop coordinates from XLSX(only) files  
 - Retrieves satellite imagery using **Google Static Maps**  
 - Applies spatial jittering to handle geolocation noise  
 - Performs image quality control (cloud glare, shadows, resolution)  
@@ -33,7 +33,6 @@ The system is designed to be **deterministic, transparent, and scalable**, suita
 
 ### Supported Formats
 - `.xlsx`
-- `.csv`
 
 ### Required Columns
 
@@ -123,8 +122,6 @@ For each rooftop, the following artifacts are saved:
 - Buffer visualization images  
 - Segmentation mask image  
 - Final audit overlay with geometry and metrics  
-
----
 
 ---
 
