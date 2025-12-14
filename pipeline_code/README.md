@@ -95,12 +95,57 @@ For valid detections, the pipeline computes:
 ---
 
 ## Running the Pipeline
-### Command-Line Usage
+## API Key Configuration (Required)
+
+Satellite imagery is fetched using **Google Static Maps**, which requires a valid API key with billing enabled.
+
+**API keys are not included in this repository.**
+
+### Step 1: Create a Google Static Maps API Key
+
+1. Go to Google Cloud Console  
+2. Create or select a project  
+3. Enable **Maps Static API**  
+4. Enable billing  
+5. Generate an API key  
+6. (Recommended) Restrict the key:
+   - Limit to Maps Static API
+   - Apply a billing or usage cap
+
+The pipeline can be executed with or without explicitly passing the Google Maps API key, depending on how the key is provided.
+
+---
+
+### Step 2: Provide the API Key (Two Supported Methods)
+
+#### Option A: Environment Variable (Recommended)
+
+This is the preferred and secure method, especially for server execution.
+
+**Linux / Server**
+```bash
+export GOOGLE_API_KEY="YOUR_GOOGLE_MAPS_API_KEY"
+```
+### Case 1: API Key Passed via Command-Line Argument
+
+Use this method if the API key is **not set as an environment variable**.
+
+```bash
 python infer.py \
   --input_file data/input.csv \
   --output_dir outputs/run_01 \
   --model_path models/yolo_seg.pt \
   --api_key YOUR_GOOGLE_MAPS_API_KEY
+```
+Use this method if the API key is already set in the environment as GOOGLE_API_KEY
+
+```bash
+python infer.py \
+  --input_file data/input.csv \
+  --output_dir outputs/run_01 \
+  --model_path models/yolo_seg.pt
+```
+
 ### Arguments
 Argument	Description<br><br>
 --input_file	CSV/XLSX with rooftop coordinates<br>
