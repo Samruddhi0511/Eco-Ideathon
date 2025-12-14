@@ -2,28 +2,30 @@
 
 ## Overview
 
-This repository contains an end-to-end **Rooftop Solar Photovoltaic (PV) Verification Pipeline** implemented in Python.  
-The pipeline uses satellite imagery and a YOLO-based segmentation model to detect rooftop solar panels, estimate their area and capacity, and generate auditable outputs.
+This repository implements an end-to-end **Rooftop Solar Photovoltaic (PV) Verification Pipeline** in Python.
 
-The system is designed to be deterministic, explainable, and suitable for large-scale rooftop verification tasks.
+The pipeline ingests rooftop coordinates, retrieves high-resolution satellite imagery, applies a YOLO-based segmentation model to detect rooftop solar panels, validates detections using spatial buffer logic, and produces **auditable and explainable outputs**.
+
+The system is designed to be **deterministic, transparent, and scalable**, suitable for large-scale rooftop verification under diverse imaging conditions.
 
 ---
 
 ## Key Features
 
-- Reads rooftop coordinates from CSV or XLSX files
-- Fetches satellite imagery using:
-  - Google Static Maps (preferred)
-- Applies spatial jittering to handle coordinate noise
-- Performs image quality checks (clouds, shadows, resolution)
-- Runs YOLO segmentation inference
-- Applies rooftop buffer validation (1200 sqft, fallback to 2400 sqft)
+- Ingests rooftop coordinates from CSV or XLSX files  
+- Retrieves satellite imagery using **Google Static Maps**  
+- Applies spatial jittering to handle geolocation noise  
+- Performs image quality control (cloud glare, shadows, resolution)  
+- Runs YOLO-based **segmentation inference**  
+- Validates detections using rooftop buffer logic:
+  - 1200 sqft (primary)
+  - 2400 sqft (fallback)
 - Estimates:
   - PV area (m²)
   - Panel count
   - Installed capacity (kW)
-- Generates GeoJSON-compatible polygon outputs
-- Saves visual audit overlays for verification
+- Outputs **GeoJSON-compatible polygon masks**
+- Saves audit-ready visual overlays and artifacts  
 
 ---
 
@@ -31,6 +33,7 @@ The system is designed to be deterministic, explainable, and suitable for large-
 
 ### Supported Formats
 - `.xlsx`
+- `.csv`
 
 ### Required Columns
 
@@ -40,57 +43,88 @@ The system is designed to be deterministic, explainable, and suitable for large-
 | `latitude` | Latitude (WGS84) |
 | `longitude` | Longitude (WGS84) |
 
-
-
+---
 
 ## Pipeline Workflow
 
 ### 1. Image Acquisition
 
-- Downloads satellite imagery centered on the provided coordinates  
-- Applies ±10 m spatial jitter to reduce geolocation error  
-- Selects the best image using a quality scoring heuristic  
+- Retrieves satellite imagery centered at the provided coordinates  
+- Applies ±10 m spatial jitter to mitigate geocoding inaccuracies  
+- Selects the best image using a heuristic quality score  
 
 ---
 
-### 2. Image Quality Control
+### 2. Image Quality Control (QC)
 
-Images are flagged for:
+Each image is evaluated for:
 
-- Low resolution  
+- Low spatial resolution  
 - Excessive brightness (cloud glare)  
-- Excessive darkness (shadowing)  
+- Excessive darkness (shadowing or occlusion)  
 
-Poor-quality images are marked as **NOT_VERIFIABLE**.
+Images failing QC thresholds are marked as **NOT_VERIFIABLE**, ensuring conservative and auditable decision-making.
 
 ---
 
 ### 3. Segmentation Inference
 
-- Uses Ultralytics YOLO segmentation models  
-- Extracts pixel-level segmentation masks  
-- Falls back to bounding boxes if masks are unavailable  
+- Uses Ultralytics YOLO **segmentation models**  
+- Extracts pixel-level segmentation masks for detected PV arrays  
+- Falls back to bounding boxes if segmentation masks are unavailable  
 - Filters detections using minimum area and confidence thresholds  
 
 ---
 
 ### 4. Rooftop Buffer Validation
 
-PV detections are validated using concentric rooftop buffers:
+Detected PV regions are validated using concentric circular buffers centered on the input coordinate:
 
-- **1200 sqft buffer** (preferred)  
-- **2400 sqft buffer** (fallback)  
+- **1200 sqft buffer** is evaluated first  
+- **2400 sqft buffer** is evaluated if no PV is found in the smaller buffer  
+
+If multiple PV regions overlap a buffer, the region with the **largest overlap area** is selected.
 
 ---
 
 ### 5. Solar Estimation
 
-For valid detections, the pipeline computes:
+For validated detections, the pipeline computes:
 
-- Estimated PV area (m²)  
+- Estimated PV panel area (m²)  
 - Estimated number of panels  
-- Estimated installed capacity (kW)  
-- Calibrated confidence score  
+- Estimated installed capacity (kW), using documented assumptions  
+- Area-weighted, calibrated confidence score  
+
+All estimates are derived transparently from the detected geometry and recorded assumptions.
+
+---
+
+## Outputs
+
+### Prediction File
+
+The pipeline produces a consolidated JSON file containing one record per rooftop, including:
+
+- Detection result (`has_solar`)
+- Confidence score
+- PV area, panel count, and capacity estimates
+- Buffer radius used
+- QC status (`VERIFIABLE` / `NOT_VERIFIABLE`)
+- Polygon mask or bounding geometry
+- Image metadata and assumptions
+
+### Audit Artifacts
+
+For each rooftop, the following artifacts are saved:
+
+- Raw satellite image  
+- QC-annotated image  
+- Buffer visualization images  
+- Segmentation mask image  
+- Final audit overlay with geometry and metrics  
+
+---
 
 ---
 
@@ -163,8 +197,6 @@ No model training is required to run inference.
 ## Failure Handling
 
 The pipeline robustly handles:<br>
-
--Image acquisition failures<br>
 
 -Poor image quality<br>
 
