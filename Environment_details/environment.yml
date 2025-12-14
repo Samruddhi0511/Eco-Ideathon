@@ -8,11 +8,10 @@ dependencies:
   - pandas
   - pillow
   - requests
-  - shapely
+  - shapely>=2.0,<3.0
   - opencv
+  - pytorch>=2.0,<3.0
+  - torchvision>=0.15,<1.0
   - pip
   - pip:
-      - ultralytics
-      - torch
-      - torchvision
-
+      - ultralytics==8.3.237
