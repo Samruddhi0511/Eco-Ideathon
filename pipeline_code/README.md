@@ -163,7 +163,7 @@ Use this method if the API key is **not set as an environment variable**.
 
 ```bash
 python infer.py \
-  --input_file data/input.csv \
+  --input_file data/input.xlsx \
   --output_dir outputs/run_01 \
   --model_path models/yolo_seg.pt \
   --api_key YOUR_GOOGLE_MAPS_API_KEY
@@ -172,7 +172,7 @@ Use this method if the API key is already set in the environment as GOOGLE_API_K
 
 ```bash
 python infer.py \
-  --input_file data/input.csv \
+  --input_file data/input.xlsx \
   --output_dir outputs/run_01 \
   --model_path models/yolo_seg.pt
 ```
@@ -182,7 +182,7 @@ python infer.py \
 
 | Argument | Description |
 |--------|------------|
-| `--input_file` | Path to the input XLSX/CSV file containing `sample_id`, `latitude`, and `longitude` |
+| `--input_file` | Path to the input XLSX file containing `sample_id`, `latitude`, and `longitude` |
 | `--output_dir` | Directory where prediction JSON and audit artifacts will be saved |
 | `--model_path` | Path to the provided YOLO segmentation model (`.pt`) included in this repository |
 | `--api_key` | Google Static Maps API key (optional; can also be provided via environment variable) |
